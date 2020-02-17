@@ -1,0 +1,35 @@
+import requests
+
+
+test_map = ('https://python-scripts.com/requests#object-response', 'https://habr.com/ru/company/mailru/blog/450816/',
+            'https://docs.telethon.dev/en/latest/modules/client.html', 'https://ebasdfusobafsdak.ru',
+            'https://habr.com/ru/company/mailru/blog/4508160000/')
+
+def response_checker(url):
+    try:
+        return requests.get(url).status_code
+    except:
+        return 404
+
+f1 = open("Недоступные ссылки", "w")
+f2 = open("Нет аттрибута rel=canonical", "w")
+f3 = open("rel=canonical ведет не на данный сайт", "w")
+
+for i in test_map:
+    if 200 <= response_checker(i) < 400:  # Если статус код "успешный"
+        response = requests.get(i)  # Получаем response
+        # print(response.text)
+        if '<link rel="canonical"' in response.text:  # Проверяем есть ли rel="canonical"
+            # Проверяем соответстувет ли ссылка в rel="canonical"
+            if '<link rel="canonical" href="{}"/>'.format(i) in response.text:
+                print('На сайте ' + i + ' есть rel="canonical", ведущая на этот сайт, но её не записываем в файл')
+            else:
+                f3.write(i + '\n')  # Записываем ссылки где есть rel='canonical', но они ведут на другой сайт
+        else:
+            f2.write(i + '\n')  # Записываем ссылки на сайт, где нет аттрибута rel='canonical'
+    else:
+        f1.write(i + '\n')  # Записываем недоступные ссылки
+
+f1.close()
+f2.close()
+f3.close()
