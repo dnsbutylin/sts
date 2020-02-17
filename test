@@ -15,10 +15,17 @@ f1 = open("Недоступные ссылки", "w")
 f2 = open("Нет аттрибута rel=canonical", "w")
 f3 = open("rel=canonical ведет не на данный сайт", "w")
 
+s = ''
+
 for i in test_map:
     if 200 <= response_checker(i) < 400:  # Если статус код "успешный"
         response = requests.get(i)  # Получаем response
-        # print(response.text)
+        try:
+            if 'rel="canonical"' in response.headers['link'] and i not in response.headers['link']:
+                s += str(i) + '\n'
+        except:
+            pass  # Поймали ошибку, значит нет параметра link в response
+
         if '<link rel="canonical"' in response.text:  # Проверяем есть ли rel="canonical"
             # Проверяем соответстувет ли ссылка в rel="canonical"
             if '<link rel="canonical" href="{}"/>'.format(i) in response.text:
@@ -29,6 +36,8 @@ for i in test_map:
             f2.write(i + '\n')  # Записываем ссылки на сайт, где нет аттрибута rel='canonical'
     else:
         f1.write(i + '\n')  # Записываем недоступные ссылки
+
+f3.write(s)  # Дозаписываем в файл данные из строки s
 
 f1.close()
 f2.close()
